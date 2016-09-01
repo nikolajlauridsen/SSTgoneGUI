@@ -22,10 +22,9 @@ class SST(Frame):
 
     def create_widgets(self):
         # Title label
-        Label(self.mainframe, text='Simple Sleep Timer').pack()
+        title = Label(self.mainframe, text='Simple Sleep Timer')
 
-        # Input
-        # Frame
+        # Input Frame
         entry_frame = Frame(self.mainframe, pady=8)
         # Hours
         Label(entry_frame, text='Hours:')\
@@ -40,10 +39,9 @@ class SST(Frame):
 
         Entry(entry_frame, width=5, textvariable=self.minutes)\
             .grid(column=3, row=0, sticky=E)
-        entry_frame.pack()
 
+        # Button frame
         button_frame = Frame(self.mainframe, padx=5, pady=5)
-        # Buttons
         Button(button_frame, text="Shutdown", command=self.run_timer,
                relief=FLAT).grid(column=0, row=0)
 
@@ -58,6 +56,10 @@ class SST(Frame):
         # Button padding
         for child in button_frame.winfo_children():
             child.grid_configure(padx=8)
+
+        # Pack it all
+        title.pack()
+        entry_frame.pack()
         button_frame.pack()
 
     def run_timer(self):
