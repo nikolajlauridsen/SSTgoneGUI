@@ -1,64 +1,94 @@
 from tkinter import *
-from tkinter import ttk
 import os
+import time
+import sys
 
 
-def run_timer(*args):
-    try:
-        s = (int(hours.get())*3600) + (int(minutes.get())*60)
-        os.system('shutdown -s -t ' + str(s))
-    except ValueError:
-        pass
+class SST(Frame):
 
+    def __init__(self, master=None):
+        Frame.__init__(self, master)
+        # ---------- Initiate Frames ----------
+        self.mainframe = Frame(root, padx=10, pady=8).pack()
+        # -------- Displayed Variables --------
+        self.hours = IntVar()
+        self.minutes = IntVar()
+        # --------- Various Variables ---------
+        self.shutdown_time = None
+        self.duration = None
+        # -- Set defaults and create widgets --
+        self.set_defaults()
+        self.create_widgets()
 
-def reboot(*args):
-    try:
-        s = (int(hours.get()) * 3600) + (int(minutes.get()) * 60)
-        os.system('shutdown -r -t ' + str(s))
-    except ValueError:
-        pass
+    def create_widgets(self):
+        # Title label
+        Label(self.mainframe, text='Simple Sleep Timer').pack()
 
+        # Input
+        # Frame
+        entry_frame = Frame(self.mainframe, pady=8)
+        # Hours
+        Label(entry_frame, text='Hours:')\
+            .grid(column=0, row=0, sticky=W)
 
-def cancel_shutdown(*args):
-    os.system('shutdown -a')
+        Entry(entry_frame, width=5, textvariable=self.hours)\
+            .grid(column=1, row=0, sticky=E)
+
+        # Minutes
+        Label(entry_frame, text='Minutes:')\
+            .grid(column=2, row=0, sticky=W)
+
+        Entry(entry_frame, width=5, textvariable=self.minutes)\
+            .grid(column=3, row=0, sticky=E)
+        entry_frame.pack()
+
+        button_frame = Frame(self.mainframe, padx=5, pady=5)
+        # Buttons
+        Button(button_frame, text="Shutdown", command=self.run_timer,
+               relief=FLAT).grid(column=0, row=0)
+
+        Button(button_frame, text="Restart", command=self.restart_timer,
+               relief=FLAT).grid(column=1, row=0)
+
+        Button(button_frame, text="Cancel", command=self.stop_timer,
+               relief=FLAT).grid(column=2, row=0)
+
+        Button(button_frame, text="Exit", command=sys.exit,
+               relief=FLAT).grid(column=3, row=0)
+        # Button padding
+        for child in button_frame.winfo_children():
+            child.grid_configure(padx=8)
+        button_frame.pack()
+
+    def run_timer(self):
+        """Calculate time to shutdown in seconds """
+        self.duration = self.hours.get() * 3600 + self.minutes.get() * 60
+        os.system('shutdown -s -t ' + str(self.duration))
+        self.save_time()
+
+    def restart_timer(self):
+        self.duration = self.hours.get() * 3600 + self.minutes.get() * 60
+        os.system('shutdown -s -t ' + str(self.duration))
+        self.save_time()
+
+    def stop_timer(self):
+        os.system('shutdown -a')
+
+    def set_defaults(self):
+        self.hours.set(1)
+        self.minutes.set(30)
+
+    # To be used later
+    def save_time(self):
+        self.shutdown_time = int(time.time() + int(self.duration))
+        with open('data.txt', 'w') as time_file:
+            time_file.write(str(self.shutdown_time))
+
 
 root = Tk()
 root.title('SST')
+root.bind('<Escape>', sys.exit)
 
-mainframe = ttk.Frame(root, padding="3 3 12 12")
-mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-mainframe.columnconfigure(0, weight=1)
-mainframe.rowconfigure(0, weight=1)
-
-# Variables
-hours = StringVar()
-minutes = StringVar()
-
-# Widgets go here
-ttk.Label(mainframe, text="Simple Sleep Timer").grid(column=2, row=1)
-
-# Hours Entry
-ttk.Label(mainframe, text="Hours:").grid(column=2, row=2, sticky=W)
-hours_entry = ttk.Entry(mainframe, width=5, textvariable=hours)
-hours_entry.grid(column=2, row=2, sticky=E)
-
-# Minutes Entry
-ttk.Label(mainframe, text="Minutes:").grid(column=2, row=3, sticky=W)
-minutes_entry = ttk.Entry(mainframe, width=5, textvariable=minutes)
-minutes_entry.grid(column=2, row=3, sticky=E)
-
-# Shutdown Buttons
-ttk.Button(mainframe, text="Shutdown", command=run_timer).grid(column=1, row=4, sticky=S)
-ttk.Button(mainframe, text="Restart", command=reboot).grid(column=2, row=4, sticky=S)
-ttk.Button(mainframe, text="Cancel Shutdown", command=cancel_shutdown).grid(column=3, row=4, sticky=S)
-
-
-for child in mainframe.winfo_children(): child.grid_configure(padx=5, pady=5)
-
-hours_entry.focus()
-hours_entry.insert(0, "1")
-minutes_entry.insert(0, "30")
-root.bind('<Return>', run_timer)
-root.bind('<Escape>', cancel_shutdown)
+app = SST(master=root)
 
 root.mainloop()
