@@ -9,12 +9,7 @@ class SST(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
         # ---------- Initiate Frames ----------
-        self.mainframe = Frame(root, padx=10, pady=8)
-        self.mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-        self.mainframe.columnconfigure(0, weight=1)
-        self.mainframe.rowconfigure(0, weight=1)
-        self.button_frame = Frame(self.mainframe, padx=5, pady=5)
-        self.button_frame.grid(column=0, row=3, columnspan=2)
+        self.mainframe = Frame(root, padx=10, pady=8).pack()
         # -------- Displayed Variables --------
         self.hours = IntVar()
         self.minutes = IntVar()
@@ -27,42 +22,43 @@ class SST(Frame):
 
     def create_widgets(self):
         # Title label
-        Label(self.mainframe, text='Simple Sleep Timer').grid(column=0, row=1, columnspan=2, sticky=W+E)
+        Label(self.mainframe, text='Simple Sleep Timer').pack()
 
         # Input
+        # Frame
+        entry_frame = Frame(self.mainframe, pady=8)
         # Hours
-        hour_frame = Frame(self.mainframe)
-        Label(hour_frame, text='Hours:')\
+        Label(entry_frame, text='Hours:')\
             .grid(column=0, row=0, sticky=W)
 
-        Entry(hour_frame, width=5, textvariable=self.hours)\
+        Entry(entry_frame, width=5, textvariable=self.hours)\
             .grid(column=1, row=0, sticky=E)
-        hour_frame.grid(column=0, row=2, sticky=W)
 
         # Minutes
-        minute_frame = Frame(self.mainframe)
-        Label(minute_frame, text='Minutes:')\
-            .grid(column=0, row=2, sticky=W)
+        Label(entry_frame, text='Minutes:')\
+            .grid(column=2, row=0, sticky=W)
 
-        Entry(minute_frame, width=5, textvariable=self.minutes)\
-            .grid(column=1, row=2, sticky=E)
-        minute_frame.grid(column=1, row=2, sticky=W)
+        Entry(entry_frame, width=5, textvariable=self.minutes)\
+            .grid(column=3, row=0, sticky=E)
+        entry_frame.pack()
 
+        button_frame = Frame(self.mainframe, padx=5, pady=5)
         # Buttons
-        Button(self.button_frame, text="Shutdown", command=self.run_timer,
-               relief=FLAT).grid(column=0, row=0, sticky=W)
+        Button(button_frame, text="Shutdown", command=self.run_timer,
+               relief=FLAT).grid(column=0, row=0)
 
-        Button(self.button_frame, text="Restart", command=self.restart_timer,
-               relief=FLAT).grid(column=1, row=0, sticky=W+E)
+        Button(button_frame, text="Restart", command=self.restart_timer,
+               relief=FLAT).grid(column=1, row=0)
 
-        Button(self.button_frame, text="Cancel", command=self.stop_timer,
-               relief=FLAT).grid(column=2, row=0, sticky=E)
+        Button(button_frame, text="Cancel", command=self.stop_timer,
+               relief=FLAT).grid(column=2, row=0)
 
-        Button(self.button_frame, text="Exit", command=sys.exit,
+        Button(button_frame, text="Exit", command=sys.exit,
                relief=FLAT).grid(column=3, row=0)
         # Button padding
-        for child in self.button_frame.winfo_children():
+        for child in button_frame.winfo_children():
             child.grid_configure(padx=8)
+        button_frame.pack()
 
     def run_timer(self):
         """Calculate time to shutdown in seconds """
