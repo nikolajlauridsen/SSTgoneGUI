@@ -33,12 +33,16 @@ class SST(Frame):
         Entry(entry_frame, width=5, textvariable=self.hours)\
             .grid(column=1, row=0, sticky=E)
 
+        # Add separator
+        Frame(entry_frame, width=30)\
+            .grid(column=2, row=0)
+
         # Minutes
         Label(entry_frame, text='Minutes:')\
-            .grid(column=2, row=0, sticky=W)
+            .grid(column=3, row=0, sticky=W)
 
         Entry(entry_frame, width=5, textvariable=self.minutes)\
-            .grid(column=3, row=0, sticky=E)
+            .grid(column=4, row=0, sticky=E)
 
         # Button frame
         button_frame = Frame(self.mainframe, padx=5, pady=5)
