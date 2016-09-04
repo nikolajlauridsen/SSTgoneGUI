@@ -1,8 +1,10 @@
 from tkinter import *
+from datetime import datetime
 import os
 import time
 import sys
 
+# TODO: Clean up
 
 class SST(Frame):
 
@@ -14,7 +16,11 @@ class SST(Frame):
         self.hours = IntVar()
         self.minutes = IntVar()
         # --------- Various Variables ---------
-        self.shutdown_time = None
+        self.shutdown_time = 0
+        self.get_time()
+        self.shut_time_string = StringVar()
+        if self.timer_running():
+            self.convert_time()
         self.duration = None
         # -- Set defaults and create widgets --
         self.set_defaults()
@@ -23,6 +29,7 @@ class SST(Frame):
     def create_widgets(self):
         # Title label
         title = Label(self.mainframe, text='Simple Sleep Timer')
+        status = Label(self.mainframe, textvariable=self.shut_time_string)
 
         # Input Frame
         entry_frame = Frame(self.mainframe, pady=8)
@@ -64,13 +71,16 @@ class SST(Frame):
         # Pack it all
         title.pack()
         entry_frame.pack()
+        status.pack()
         button_frame.pack()
 
     def run_timer(self):
         """Calculate time to shutdown in seconds """
         self.duration = self.hours.get() * 3600 + self.minutes.get() * 60
         os.system('shutdown -s -t ' + str(self.duration))
+        self.shutdown_time = int(time.time() + int(self.duration))
         self.save_time()
+        self.convert_time()
 
     def restart_timer(self):
         self.duration = self.hours.get() * 3600 + self.minutes.get() * 60
@@ -78,7 +88,15 @@ class SST(Frame):
         self.save_time()
 
     def stop_timer(self):
-        os.system('shutdown -a')
+        if self.timer_running():
+            with open('data.txt', 'w') as time_file:
+                time_file.write('0')
+            self.duration = 0
+            self.shutdown_time = 0
+            self.shut_time_string.set('No timer set')
+            os.system('shutdown -a')
+        else:
+            self.shut_time_string.set('Timer not running, start timer first')
 
     def set_defaults(self):
         self.hours.set(1)
@@ -86,15 +104,30 @@ class SST(Frame):
 
     # To be used later
     def save_time(self):
-        self.shutdown_time = int(time.time() + int(self.duration))
         with open('data.txt', 'w') as time_file:
             time_file.write(str(self.shutdown_time))
 
+    # Get the previous time stamp and save it in self.shutdown_time
+    def get_time(self):
+        data = open('data.txt', 'r').readlines()
+        self.shutdown_time = int(data[0])
 
-root = Tk()
-root.title('SST')
-root.bind('<Escape>', sys.exit)
+    def convert_time(self):
+        stamp = datetime.fromtimestamp(self.shutdown_time)\
+            .strftime('Shutting down at %H:%M on %d-%m')
+        self.shut_time_string.set(stamp)
 
-app = SST(master=root)
+    def timer_running(self):
+        if self.shutdown_time - time.time() < 0:
+            self.shut_time_string.set('No timer set')
+            return False
+        else:
+            return True
 
-root.mainloop()
+if __name__ == "__main__":
+    root = Tk()
+    root.title('SST')
+    root.bind('<Escape>', sys.exit)
+
+    app = SST(master=root)
+    root.mainloop()
