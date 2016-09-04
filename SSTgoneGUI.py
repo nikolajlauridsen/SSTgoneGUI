@@ -18,12 +18,12 @@ class SST(Frame):
         # --------- Various Variables ---------
         self.shutdown_time = 0
         self.duration = None
-        # -- Set defaults and create widgets --
-        self.set_defaults()
-        self.create_widgets()
         # -- If timer is running, set status --
         if self.timer_running():
             self.set_status()
+        # -- Set defaults and create widgets --
+        self.set_defaults()
+        self.create_widgets()
 
     def create_widgets(self):
         """Create all the widgets, keeps __init__ short-ish"""
