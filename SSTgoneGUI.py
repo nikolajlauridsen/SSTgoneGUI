@@ -4,7 +4,6 @@ import os
 import time
 import sys
 
-# TODO: Clean up
 
 class SST(Frame):
 
@@ -15,19 +14,20 @@ class SST(Frame):
         # -------- Displayed Variables --------
         self.hours = IntVar()
         self.minutes = IntVar()
+        self.shut_time_string = StringVar()
         # --------- Various Variables ---------
         self.shutdown_time = 0
-        self.get_time()
-        self.shut_time_string = StringVar()
-        if self.timer_running():
-            self.convert_time()
         self.duration = None
         # -- Set defaults and create widgets --
         self.set_defaults()
         self.create_widgets()
+        # -- If timer is running, set status --
+        if self.timer_running():
+            self.set_status()
 
     def create_widgets(self):
-        # Title label
+        """Create all the widgets, keeps __init__ short-ish"""
+        # Labels
         title = Label(self.mainframe, text='Simple Sleep Timer')
         status = Label(self.mainframe, textvariable=self.shut_time_string)
 
@@ -53,7 +53,7 @@ class SST(Frame):
 
         # Button frame
         button_frame = Frame(self.mainframe, padx=5, pady=5)
-        Button(button_frame, text="Shutdown", command=self.run_timer,
+        Button(button_frame, text="Shutdown", command=self.shutdown_timer,
                relief=FLAT).grid(column=0, row=0)
 
         Button(button_frame, text="Restart", command=self.restart_timer,
@@ -74,22 +74,22 @@ class SST(Frame):
         status.pack()
         button_frame.pack()
 
-    def run_timer(self):
-        """Calculate time to shutdown in seconds """
+    def shutdown_timer(self):
+        """Start the timer, for a shutdown event."""
         self.duration = self.hours.get() * 3600 + self.minutes.get() * 60
         os.system('shutdown -s -t ' + str(self.duration))
-        self.shutdown_time = int(time.time() + int(self.duration))
         self.save_time()
-        self.convert_time()
+        self.set_status()
 
     def restart_timer(self):
+        """Set the timer for a restart event."""
         self.duration = self.hours.get() * 3600 + self.minutes.get() * 60
         os.system('shutdown -s -t ' + str(self.duration))
-        self.shutdown_time = int(time.time() + int(self.duration))
         self.save_time()
-        self.convert_time()
+        self.set_status()
 
     def stop_timer(self):
+        """Stop and reset the timer."""
         if self.timer_running():
             with open('data.txt', 'w') as time_file:
                 time_file.write('0')
@@ -101,25 +101,31 @@ class SST(Frame):
             self.shut_time_string.set('Timer not running, start timer first')
 
     def set_defaults(self):
+        """Set hour/minute defaults."""
         self.hours.set(1)
         self.minutes.set(30)
 
-    # To be used later
     def save_time(self):
+        """Calculate shutdown time and save to file."""
+        self.shutdown_time = int(time.time() + int(self.duration))
         with open('data.txt', 'w') as time_file:
             time_file.write(str(self.shutdown_time))
 
     # Get the previous time stamp and save it in self.shutdown_time
     def get_time(self):
+        """Read the shutdown time from the file."""
         data = open('data.txt', 'r').readlines()
         self.shutdown_time = int(data[0])
 
-    def convert_time(self):
+    def set_status(self):
+        """Set the status line to display the shutdown time."""
         stamp = datetime.fromtimestamp(self.shutdown_time)\
             .strftime('Shutting down at %H:%M on %d-%m')
         self.shut_time_string.set(stamp)
 
     def timer_running(self):
+        """Check whether the timer is running or not."""
+        self.get_time()
         if self.shutdown_time - time.time() < 0:
             self.shut_time_string.set('No timer set')
             return False
@@ -128,8 +134,7 @@ class SST(Frame):
 
 if __name__ == "__main__":
     root = Tk()
-    root.title('SST')
-    root.bind('<Escape>', sys.exit)
-
     app = SST(master=root)
+    root.title('SST GUI')
+    root.bind('<Escape>', sys.exit)
     root.mainloop()
