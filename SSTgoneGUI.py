@@ -85,7 +85,9 @@ class SST(Frame):
     def restart_timer(self):
         self.duration = self.hours.get() * 3600 + self.minutes.get() * 60
         os.system('shutdown -s -t ' + str(self.duration))
+        self.shutdown_time = int(time.time() + int(self.duration))
         self.save_time()
+        self.convert_time()
 
     def stop_timer(self):
         if self.timer_running():
